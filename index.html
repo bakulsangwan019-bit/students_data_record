@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Task Manager App</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f4f8;
+      min-height: 100vh;
+    }
+
+    /* ---- NAVBAR ---- */
+    .navbar {
+      background-color: #2b6cb0;
+      color: white;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .navbar h2 {
+      font-size: 20px;
+    }
+
+    .navbar span {
+      font-size: 13px;
+      opacity: 0.85;
+    }
+
+    /* ---- MAIN LAYOUT ---- */
+    .main {
+      max-width: 700px;
+      margin: 30px auto;
+      padding: 0 16px;
+    }
+
+    /* ---- DASHBOARD STATS ---- */
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 10px;
+      padding: 18px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    }
+
+    .stat-card .number {
+      font-size: 32px;
+      font-weight: bold;
+      color: #2b6cb0;
+    }
+
+    .stat-card .label {
+      font-size: 13px;
+      color: #718096;
+      margin-top: 4px;
+    }
+
+    /* ---- ADD TASK FORM ---- */
+    .form-section {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    }
+
+    .form-section h3 {
+      font-size: 16px;
+      color: #2d3748;
+      margin-bottom: 14px;
+      border-left: 4px solid #2b6cb0;
+      padding-left: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    .form-group label {
+      font-size: 13px;
+      color: #4a5568;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 14px;
+      border: 1px solid #cbd5e0;
+      border-radius: 8px;
+      outline: none;
+      background: #f7fafc;
+      color: #2d3748;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: #2b6cb0;
+      background: white;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      height: 70px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .btn-add-task {
+      width: 100%;
+      padding: 12px;
+      background-color: #2b6cb0;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    .btn-add-task:hover {
+      background-color: #2c5282;
+    }
+
+    /* ---- TASK LIST SECTION ---- */
+    .section-box {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    }
+
+    .section-box h3 {
+      font-size: 16px;
+      color: #2d3748;
+      margin-bottom: 14px;
+      border-left: 4px solid #2b6cb0;
+      padding-left: 10px;
+    }
+
+    .section-box.completed-section h3 {
+      border-left-color: #38a169;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      background: #f7fafc;
+    }
+
+    .task-item.done {
+      background: #f0fff4;
+      border-color: #c6f6d5;
+      opacity: 0.85;
+    }
+
+    .task-checkbox {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      cursor: pointer;
+      accent-color: #38a169;
+      flex-shrink: 0;
+    }
+
+    .task-info {
+      flex: 1;
+    }
+
+    .task-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: #2d3748;
+    }
+
+    .task-item.done .task-title {
+      text-decoration: line-through;
+      color: #a0aec0;
+    }
+
+    .task-desc {
+      font-size: 12px;
+      color: #718096;
+      margin-top: 3px;
+    }
+
+    .task-meta {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 99px;
+      font-weight: 500;
+    }
+
+    .badge-high   { background: #fff5f5; color: #c53030; }
+    .badge-medium { background: #fffaf0; color: #c05621; }
+    .badge-low    { background: #f0fff4; color: #276749; }
+    .badge-date   { background: #ebf8ff; color: #2b6cb0; }
+
+    .task-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .btn-done {
+      background: #38a169;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-done:hover { background: #276749; }
+
+    .btn-del {
+      background: #e53e3e;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .btn-del:hover { background: #c53030; }
+
+    .empty-msg {
+      text-align: center;
+      color: #a0aec0;
+      font-size: 14px;
+      padding: 16px 0;
+    }
+
+    /* ---- RESPONSIVE MOBILE ---- */
+    @media (max-width: 480px) {
+      .dashboard {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+
+      .stat-card .number { font-size: 24px; }
+      .stat-card .label  { font-size: 11px; }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .task-item {
+        flex-wrap: wrap;
+      }
+
+      .task-actions {
+        flex-direction: row;
+        width: 100%;
+      }
+
+      .btn-done, .btn-del {
+        flex: 1;
+      }
+
+      .navbar h2 { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <div class="navbar">
+    <h2>📋 Task Manager</h2>
+    <span>Dashboard</span>
+  </div>
+
+  <div class="main">
+
+    <!-- DASHBOARD / HOME SCREEN -->
+    <div class="dashboard">
+      <div class="stat-card">
+        <div class="number" id="totalCount">0</div>
+        <div class="label">Total Tasks</div>
+      </div>
+      <div class="stat-card">
+        <div class="number" style="color:#e53e3e" id="pendingCount">0</div>
+        <div class="label">Pending</div>
+      </div>
+      <div class="stat-card">
+        <div class="number" style="color:#38a169" id="doneCount">0</div>
+        <div class="label">Completed</div>
+      </div>
+    </div>
+
+    <!-- ADD TASK FORM -->
+    <div class="form-section">
+      <h3>➕ Add New Task</h3>
+
+      <div class="form-group">
+        <label>Task Title *</label>
+        <input type="text" id="taskTitle" placeholder="Enter task title..." />
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="taskDesc" placeholder="Enter task description (optional)..."></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Priority</label>
+          <select id="taskPriority">
+            <option value="High">🔴 High</option>
+            <option value="Medium" selected>🟡 Medium</option>
+            <option value="Low">🟢 Low</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Due Date</label>
+          <input type="date" id="taskDate" />
+        </div>
+      </div>
+
+      <button class="btn-add-task" onclick="addTask()">Add Task</button>
+    </div>
+
+    <!-- TASK LIST SECTION -->
+    <div class="section-box">
+      <h3>📝 Pending Tasks</h3>
+      <ul id="pendingList" style="list-style:none;"></ul>
+      <p class="empty-msg" id="pendingEmpty">No pending tasks. Add a task above!</p>
+    </div>
+
+    <!-- COMPLETED TASKS SECTION -->
+    <div class="section-box completed-section">
+      <h3>✅ Completed Tasks</h3>
+      <ul id="completedList" style="list-style:none;"></ul>
+      <p class="empty-msg" id="completedEmpty">No completed tasks yet.</p>
+    </div>
+
+  </div>
+
+  <script>
+    let tasks = [];
+    let idCounter = 1;
+
+    function addTask() {
+      const title    = document.getElementById("taskTitle").value.trim();
+      const desc     = document.getElementById("taskDesc").value.trim();
+      const priority = document.getElementById("taskPriority").value;
+      const date     = document.getElementById("taskDate").value;
+
+      if (title === "") {
+        alert("Please enter a task title!");
+        return;
+      }
+
+      const task = {
+        id: idCounter++,
+        title: title,
+        desc: desc,
+        priority: priority,
+        date: date,
+        completed: false
+      };
+
+      tasks.push(task);
+
+      // Clear form
+      document.getElementById("taskTitle").value = "";
+      document.getElementById("taskDesc").value = "";
+      document.getElementById("taskPriority").value = "Medium";
+      document.getElementById("taskDate").value = "";
+
+      renderTasks();
+    }
+
+    function markDone(id) {
+      const task = tasks.find(t => t.id === id);
+      if (task) task.completed = true;
+      renderTasks();
+    }
+
+    function undoTask(id) {
+      const task = tasks.find(t => t.id === id);
+      if (task) task.completed = false;
+      renderTasks();
+    }
+
+    function deleteTask(id) {
+      tasks = tasks.filter(t => t.id !== id);
+      renderTasks();
+    }
+
+    function getBadgeClass(priority) {
+      if (priority === "High")   return "badge-high";
+      if (priority === "Medium") return "badge-medium";
+      return "badge-low";
+    }
+
+    function createTaskItem(task) {
+      const li = document.createElement("li");
+      li.classList.add("task-item");
+      if (task.completed) li.classList.add("done");
+
+      const dateText = task.date ? task.date : "No due date";
+
+      li.innerHTML = `
+        <div class="task-info">
+          <div class="task-title">${task.title}</div>
+          ${task.desc ? `<div class="task-desc">${task.desc}</div>` : ""}
+          <div class="task-meta">
+            <span class="badge ${getBadgeClass(task.priority)}">${task.priority}</span>
+            <span class="badge badge-date">📅 ${dateText}</span>
+          </div>
+        </div>
+        <div class="task-actions">
+          ${!task.completed
+            ? `<button class="btn-done" onclick="markDone(${task.id})">✓ Done</button>`
+            : `<button class="btn-done" style="background:#718096" onclick="undoTask(${task.id})">Undo</button>`
+          }
+          <button class="btn-del" onclick="deleteTask(${task.id})">Delete</button>
+        </div>
+      `;
+
+      return li;
+    }
+
+    function renderTasks() {
+      const pendingList   = document.getElementById("pendingList");
+      const completedList = document.getElementById("completedList");
+      const pendingEmpty  = document.getElementById("pendingEmpty");
+      const completedEmpty = document.getElementById("completedEmpty");
+
+      pendingList.innerHTML   = "";
+      completedList.innerHTML = "";
+
+      const pending   = tasks.filter(t => !t.completed);
+      const completed = tasks.filter(t => t.completed);
+
+      // Update stats
+      document.getElementById("totalCount").textContent   = tasks.length;
+      document.getElementById("pendingCount").textContent = pending.length;
+      document.getElementById("doneCount").textContent    = completed.length;
+
+      // Render pending
+      if (pending.length === 0) {
+        pendingEmpty.style.display = "block";
+      } else {
+        pendingEmpty.style.display = "none";
+        pending.forEach(t => pendingList.appendChild(createTaskItem(t)));
+      }
+
+      // Render completed
+      if (completed.length === 0) {
+        completedEmpty.style.display = "block";
+      } else {
+        completedEmpty.style.display = "none";
+        completed.forEach(t => completedList.appendChild(createTaskItem(t)));
+      }
+    }
+
+    // Enter key support
+    document.getElementById("taskTitle").addEventListener("keydown", function(e) {
+      if (e.key === "Enter") addTask();
+    });
+
+    renderTasks();
+  </script>
+
+</body>
+</html>
